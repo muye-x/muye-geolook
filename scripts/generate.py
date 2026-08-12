@@ -286,6 +286,32 @@ def _titles(question: str, brand: str, market: str) -> list[str]:
 
 # ---------------------------------------------------------------- LLM 初稿
 
+def select_draft_outlines(outlines: list[dict], questions: list[dict]) -> list[dict]:
+    """按工作台诊断结果挑选需要补内容的未成稿问题。
+
+    ``analytics.questions`` 是问题诊断的唯一口径来源。只有带有非 ``ok``
+    诊断的非探测题才值得默认消耗 LLM 预算；未采样、点名探测、表现正常和已有
+    成稿的问题都不生成重复初稿。结果保持工作台的诊断优先级顺序。
+    """
+    outlines_by_id = {outline.get("question_id"): outline for outline in outlines}
+    selected = []
+    for question in questions:
+        diagnosis = question.get("diagnosis") or {}
+        if (question.get("brand_probe") or diagnosis.get("sev") in (None, "ok")
+                or question.get("content") == "已成稿"):
+            continue
+        outline = outlines_by_id.get(question.get("id"))
+        if outline:
+            selected.append(outline)
+    return selected
+
+
+def draft_candidates(slug: str, outlines: list[dict]) -> list[dict]:
+    """返回与内容工作台一致的异常诊断初稿候选。"""
+    import analytics as A
+
+    return select_draft_outlines(outlines, A.build(slug).get("questions", []))
+
 def draft(slug: str, outline: dict, provider: str | None = None) -> str:
     """用已配置的 LLM API 按大纲出初稿。没有可用 Key 就返回空。"""
     import sample as S
@@ -524,7 +550,10 @@ def run(slug: str, which: list[str] | None = None, with_draft: bool = False,
     if with_draft and outlines:
         d = adir / "drafts"
         d.mkdir(parents=True, exist_ok=True)
-        for o in outlines[:draft_limit]:
+        candidates = draft_candidates(slug, outlines)
+        if not candidates:
+            G.info("没有异常诊断且未成稿的问题，跳过 AI 初稿生成")
+        for o in candidates[:draft_limit]:
             G.info(f"起草 {o['question_id']} · {o['target_question'][:30]}…")
             text = draft(slug, o)
             if text:

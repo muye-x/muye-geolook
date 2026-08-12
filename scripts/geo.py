@@ -575,8 +575,10 @@ def main():
     s = sub.add_parser("generate", help="产出可直接部署的资产（llms.txt/JSON-LD/片段/大纲）")
     s.add_argument("--slug", required=True)
     s.add_argument("--asset", help="逗号分隔：llms,jsonld,snippets,outlines,attribution")
-    s.add_argument("--draft", action="store_true", help="额外调用 LLM 出文章初稿")
-    s.add_argument("--draft-limit", type=int, default=3, dest="draft_limit")
+    s.add_argument("--draft", action="store_true",
+                   help="额外为异常诊断且未成稿的问题调用 LLM 出初稿")
+    s.add_argument("--draft-limit", type=int, default=3, dest="draft_limit",
+                   help="最多生成的异常诊断初稿数（默认 3）")
     s.set_defaults(func=cmd_generate)
 
     s = sub.add_parser("lint", help="检查 AI 初稿的编造风险（发布/交付前必跑）")

@@ -216,7 +216,7 @@ python3 scripts/geo.py sample-import --slug <项目> --file <采样表>
 | `ui` | 全流程看板 |
 | `bootstrap` / `crawl` / `audit` | 推导底座 / 抓站 / 六维打分 |
 | `sample` / `sample-sheet` / `sample-import` | API 采样 / 人工采样表导出与回灌 |
-| `plan` / `generate` / `lint` | 生成工单 / 生成资产（`--draft` 出初稿）/ 初稿风险检查 |
+| `plan` / `generate` / `lint` | 生成工单 / 生成资产（`--draft` 只为异常诊断且未成稿的问题出初稿）/ 初稿风险检查 |
 | `verify` / `report` / `deliverables` / `deliver` | 自动验收 / 报告 / 三份交付物 / 客户交付包 |
 | `publish` / `task` / `status` / `list` | 发布成稿 / 工单状态 / 项目看板 / 项目列表 |
 
