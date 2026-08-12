@@ -121,5 +121,21 @@ class TestDraftPromptCompetitors(WorkDirCase):
         self.assertIn("老牌竞品", prompt, "无 confirmed 字段的旧数据视为已确认")
 
 
+class TestDraftOutlineSelection(unittest.TestCase):
+    def test_only_abnormal_unpublished_questions_are_selected(self):
+        outlines = [{"question_id": qid} for qid in ("q001", "q002", "q003", "q004", "q005")]
+        questions = [
+            {"id": "q002", "diagnosis": {"type": "完全缺席", "sev": "P1"}, "content": "缺口"},
+            {"id": "q001", "diagnosis": {"type": "疑似负面", "sev": "P0"}, "content": "缺口"},
+            {"id": "q003", "diagnosis": {"type": "表现正常", "sev": "ok"}, "content": "缺口"},
+            {"id": "q004", "diagnosis": None, "brand_probe": True, "content": "缺口"},
+            {"id": "q005", "diagnosis": {"type": "排名靠后", "sev": "P2"}, "content": "已成稿"},
+        ]
+
+        selected = GEN.select_draft_outlines(outlines, questions)
+
+        self.assertEqual([outline["question_id"] for outline in selected], ["q002", "q001"])
+
+
 if __name__ == "__main__":
     unittest.main()
